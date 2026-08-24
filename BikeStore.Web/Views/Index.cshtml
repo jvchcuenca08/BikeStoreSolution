@@ -1,0 +1,212 @@
+﻿@model IEnumerable<BikeStore.Models.Bicicleta>
+
+@{
+    ViewData["Title"] = "Bicicletas";
+}
+
+<div class="container mt-4">
+
+    <!-- ENCABEZADO -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h1 class="fw-bold">🚲 Bicicletas</h1>
+
+            <p class="text-muted mb-0">
+                Administración del inventario de bicicletas
+            </p>
+        </div>
+
+        <a asp-controller="Bicicletas"
+           asp-action="Create"
+           class="btn btn-primary">
+            + Nueva bicicleta
+        </a>
+
+    </div>
+
+
+    <!-- FILTROS -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-body">
+
+            <div class="row g-3">
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Buscar
+                    </label>
+
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Marca o modelo..." />
+
+                </div>
+
+
+                <div class="col-md-3">
+
+                    <label class="form-label">
+                        Categoría
+                    </label>
+
+                    <select class="form-select">
+
+                        <option value="">
+                            Todas las categorías
+                        </option>
+
+                        <option value="1">
+                            Montaña
+                        </option>
+
+                        <option value="2">
+                            Ruta
+                        </option>
+
+                        <option value="3">
+                            BMX
+                        </option>
+
+                        <option value="4">
+                            Eléctricas
+                        </option>
+
+                        <option value="5">
+                            Infantiles
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-2 d-flex align-items-end">
+
+                    <button type="button"
+                            class="btn btn-dark w-100">
+                        🔍 Buscar
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TABLA -->
+    <div class="card shadow-sm">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>ID</th>
+                            <th>Marca</th>
+                            <th>Modelo</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var bicicleta in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    @bicicleta.IdBicicleta
+                                </td>
+
+                                <td>
+                                    @bicicleta.Marca
+                                </td>
+
+                                <td>
+                                    @bicicleta.Modelo
+                                </td>
+
+                                <td>
+                                    @bicicleta.IdCategoria
+                                </td>
+
+                                <td>
+                                    $@bicicleta.Precio.ToString("N2")
+                                </td>
+
+                                <td>
+                                    @bicicleta.Stock
+                                </td>
+
+                                <td>
+
+                                    @if (bicicleta.Stock == 0)
+                                    {
+                                        <span class="badge bg-danger">
+                                            AGOTADO
+                                        </span>
+                                    }
+                                    else if (bicicleta.Stock <= 3)
+                                    {
+                                        <span class="badge bg-warning text-dark">
+                                            STOCK BAJO
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-success">
+                                            DISPONIBLE
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <td>
+
+                                    <a asp-controller="Bicicletas"
+                                       asp-action="Edit"
+                                       asp-route-id="@bicicleta.IdBicicleta"
+                                       class="btn btn-warning btn-sm">
+                                        ✏️ Editar
+                                    </a>
+
+                                    <a asp-controller="Bicicletas"
+                                       asp-action="Delete"
+                                       asp-route-id="@bicicleta.IdBicicleta"
+                                       class="btn btn-danger btn-sm">
+                                        🗑️ Eliminar
+                                    </a>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

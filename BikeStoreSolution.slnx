@@ -3,4 +3,5 @@
   <Project Path="BikeStore.Application/BikeStore.Application.csproj" />
   <Project Path="BikeStore.Domain/BikeStore.Domain.csproj" />
   <Project Path="BikeStore.Infrastructure/BikeStore.Infrastructure.csproj" />
+  <Project Path="BikeStore.Web/BikeStore.Web.csproj" Id="f33a5d0e-fd5b-451c-8a64-67928bdac41a" />
 </Solution>
