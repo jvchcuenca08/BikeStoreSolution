@@ -1,0 +1,206 @@
+﻿@using BikeStore.Models
+
+@{
+    ViewData["Title"] = "Nueva Venta";
+
+    var clientes = ViewBag.Clientes as List<Cliente> ?? new List<Cliente>();
+    var bicicletas = ViewBag.Bicicletas as List<Bicicleta> ?? new List<Bicicleta>();
+}
+
+<h1>Nueva Venta</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-8">
+
+        <div class="mb-3">
+            <label class="form-label">
+                Cliente
+            </label>
+
+            <select id="cliente"
+                    class="form-select">
+
+                <option value="">
+                    -- Seleccione un cliente --
+                </option>
+
+                @foreach (var cliente in clientes)
+                {
+                    <option value="@cliente.IdCliente">
+                        @cliente.Cedula - @cliente.Nombres @cliente.Apellidos
+                    </option>
+                }
+
+            </select>
+        </div>
+
+        <hr />
+
+        <h4>Agregar bicicleta</h4>
+
+        <div class="row">
+
+            <div class="col-md-5">
+                <label class="form-label">
+                    Bicicleta
+                </label>
+
+                <select id="bicicleta"
+                        class="form-select">
+
+                    <option value="">
+                        -- Seleccione una bicicleta --
+                    </option>
+
+                    @foreach (var bicicleta in bicicletas)
+                    {
+                        <option value="@bicicleta.IdBicicleta"
+                                data-precio="@bicicleta.Precio">
+                            @bicicleta.Marca @bicicleta.Modelo
+                            - $@bicicleta.Precio.ToString("N2")
+                            - Stock: @bicicleta.Stock
+                        </option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">
+                    Cantidad
+                </label>
+
+                <input id="cantidad"
+                       type="number"
+                       min="1"
+                       value="1"
+                       class="form-control" />
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="button"
+                        id="btnAgregar"
+                        class="btn btn-success">
+                    Agregar
+                </button>
+            </div>
+
+        </div>
+
+        <hr />
+
+        <h4>Detalle de la venta</h4>
+
+        <table class="table table-bordered"
+               id="tablaDetalle">
+
+            <thead>
+                <tr>
+                    <th>Bicicleta</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+            </tbody>
+
+        </table>
+
+        <div class="text-end">
+
+            <p>
+                <strong>Subtotal:</strong>
+                $<span id="subtotalGeneral">0.00</span>
+            </p>
+
+            <p>
+                <strong>IVA (15%):</strong>
+                $<span id="iva">0.00</span>
+            </p>
+
+            <h4>
+                Total:
+                $<span id="total">0.00</span>
+            </h4>
+
+        </div>
+
+        <button type="button"
+                class="btn btn-primary">
+            Registrar Venta
+        </button>
+
+        <a asp-action="Index"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+
+    </div>
+</div>
+@section Scripts {
+    <script>
+        let subtotalGeneral = 0;
+
+        document.getElementById("btnAgregar").addEventListener("click", function () {
+
+            const selectBicicleta = document.getElementById("bicicleta");
+            const cantidadInput = document.getElementById("cantidad");
+
+            const opcionSeleccionada =
+                selectBicicleta.options[selectBicicleta.selectedIndex];
+
+            const idBicicleta = selectBicicleta.value;
+            const nombreBicicleta = opcionSeleccionada.text;
+            const precio = parseFloat(
+                opcionSeleccionada.getAttribute("data-precio")
+            );
+
+            const cantidad = parseInt(cantidadInput.value);
+
+            if (!idBicicleta) {
+                alert("Seleccione una bicicleta.");
+                return;
+            }
+
+            if (isNaN(cantidad) || cantidad <= 0) {
+                alert("Ingrese una cantidad válida.");
+                return;
+            }
+
+            const subtotal = precio * cantidad;
+
+            const fila = document.createElement("tr");
+
+            fila.innerHTML = `
+                <td>${nombreBicicleta}</td>
+                <td>${cantidad}</td>
+                <td>$${precio.toFixed(2)}</td>
+                <td>$${subtotal.toFixed(2)}</td>
+            `;
+
+            document
+                .querySelector("#tablaDetalle tbody")
+                .appendChild(fila);
+
+            subtotalGeneral += subtotal;
+
+            const iva = subtotalGeneral * 0.15;
+            const total = subtotalGeneral + iva;
+
+            document.getElementById("subtotalGeneral").textContent =
+                subtotalGeneral.toFixed(2);
+
+            document.getElementById("iva").textContent =
+                iva.toFixed(2);
+
+            document.getElementById("total").textContent =
+                total.toFixed(2);
+
+            cantidadInput.value = 1;
+        });
+    </script>
+}
