@@ -1,120 +1,235 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BikeStore.Models;
+using System.Net.Http.Json;
 
 namespace BikeStore.Controllers
 {
     public class VentasController : Controller
     {
+        private readonly HttpClient _httpClient;
+
+        public VentasController(IHttpClientFactory httpClientFactory)
+        {
+            _httpClient = httpClientFactory.CreateClient("BikeStoreAPI");
+        }
+
         // =====================================================
-        // HISTORIAL DE VENTAS - TEMPORAL
+        // HISTORIAL DE VENTAS - API REAL
         // =====================================================
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var ventas = new List<Venta>
+            try
             {
-                new Venta
-                {
-                    IdVenta = 1,
-                    Fecha = DateTime.Now.AddDays(-2),
-                    IdCliente = 1,
-                    Cliente = "Carlos Pérez",
-                    Subtotal = 850.00m,
-                    Iva = 127.50m,
-                    Total = 977.50m
-                },
+                var ventas = await _httpClient
+                    .GetFromJsonAsync<List<Venta>>("api/Ventas")
+                    ?? new List<Venta>();
 
-                new Venta
-                {
-                    IdVenta = 2,
-                    Fecha = DateTime.Now.AddDays(-1),
-                    IdCliente = 2,
-                    Cliente = "María López",
-                    Subtotal = 1200.00m,
-                    Iva = 180.00m,
-                    Total = 1380.00m
-                },
+                // Obtener clientes para mostrar sus nombres
+                var clientes = await _httpClient
+                    .GetFromJsonAsync<List<Cliente>>("api/Clientes")
+                    ?? new List<Cliente>();
 
-                new Venta
+                foreach (var venta in ventas)
                 {
-                    IdVenta = 3,
-                    Fecha = DateTime.Now,
-                    IdCliente = 3,
-                    Cliente = "Luis Andrade",
-                    Subtotal = 450.00m,
-                    Iva = 67.50m,
-                    Total = 517.50m
+                    var cliente = clientes
+                        .FirstOrDefault(c =>
+                            c.IdCliente == venta.IdCliente);
+
+                    if (cliente != null)
+                    {
+                        venta.Cliente =
+                            $"{cliente.Nombres} {cliente.Apellidos}";
+                    }
+                    else
+                    {
+                        venta.Cliente = $"Cliente #{venta.IdCliente}";
+                    }
                 }
-            };
 
-            return View(ventas);
+                return View(ventas);
+            }
+            catch
+            {
+                ViewBag.Error =
+                    "No se pudo conectar con la API de Ventas.";
+
+                return View(new List<Venta>());
+            }
         }
+
         // =====================================================
         // MOSTRAR FORMULARIO DE NUEVA VENTA
         // =====================================================
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewBag.Clientes = new List<Cliente>
-    {
-        new Cliente
-        {
-            IdCliente = 1,
-            Cedula = "1002003001",
-            Nombres = "Carlos Andrés",
-            Apellidos = "Pérez López"
-        },
+            try
+            {
+                // CLIENTES REALES
+                ViewBag.Clientes = await _httpClient
+                    .GetFromJsonAsync<List<Cliente>>("api/Clientes")
+                    ?? new List<Cliente>();
 
-        new Cliente
-        {
-            IdCliente = 2,
-            Cedula = "1002003002",
-            Nombres = "María Fernanda",
-            Apellidos = "Gómez Ruiz"
-        },
+                // BICICLETAS REALES
+                ViewBag.Bicicletas = await _httpClient
+                    .GetFromJsonAsync<List<Bicicleta>>("api/Bicicletas")
+                    ?? new List<Bicicleta>();
 
-        new Cliente
-        {
-            IdCliente = 3,
-            Cedula = "1002003003",
-            Nombres = "Luis Alberto",
-            Apellidos = "Torres Mina"
+                return View();
+            }
+            catch
+            {
+                ViewBag.Error =
+                    "No se pudo cargar clientes o bicicletas desde la API.";
+
+                ViewBag.Clientes = new List<Cliente>();
+                ViewBag.Bicicletas = new List<Bicicleta>();
+
+                return View();
+            }
         }
-    };
+        // =====================================================
+        // REGISTRAR VENTA - POST API
+        // =====================================================
 
-            ViewBag.Bicicletas = new List<Bicicleta>
-    {
-        new Bicicleta
+        [HttpPost]
+        public async Task<IActionResult> Create(
+            [FromBody] RegistrarVenta venta)
         {
-            IdBicicleta = 1,
-            Marca = "Trek",
-            Modelo = "Marlin 5",
-            Precio = 850.00m,
-            Stock = 10
-        },
+            if (venta == null ||
+                venta.IdCliente <= 0 ||
+                venta.Detalles == null ||
+                venta.Detalles.Count == 0)
+            {
+                return BadRequest(
+                    new { mensaje = "Debe seleccionar un cliente y agregar al menos una bicicleta." });
+            }
 
-        new Bicicleta
-        {
-            IdBicicleta = 2,
-            Marca = "Giant",
-            Modelo = "Talon",
-            Precio = 1200.00m,
-            Stock = 5
-        },
+            try
+            {
+                var respuesta = await _httpClient.PostAsJsonAsync(
+                    "api/Ventas",
+                    venta);
 
-        new Bicicleta
-        {
-            IdBicicleta = 3,
-            Marca = "Specialized",
-            Modelo = "Rockhopper",
-            Precio = 950.00m,
-            Stock = 8
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    return Ok(new
+                    {
+                        mensaje = "Venta registrada correctamente."
+                    });
+                }
+
+                var error = await respuesta.Content.ReadAsStringAsync();
+
+                return BadRequest(new
+                {
+                    mensaje = string.IsNullOrWhiteSpace(error)
+                        ? "No se pudo registrar la venta."
+                        : error
+                });
+            }
+            catch
+            {
+                return StatusCode(500, new
+                {
+                    mensaje = "No se pudo conectar con la API de Ventas."
+                });
+            }
         }
-    };
+        // =====================================================
+        // BUSCAR VENTAS POR CLIENTE
+        // =====================================================
 
-            return View();
+        [HttpGet]
+        public async Task<IActionResult> PorCliente(int idCliente)
+        {
+            try
+            {
+                var ventas = await _httpClient
+                    .GetFromJsonAsync<List<Venta>>(
+                        $"api/Ventas/cliente/{idCliente}")
+                    ?? new List<Venta>();
+
+                var clientes = await _httpClient
+                    .GetFromJsonAsync<List<Cliente>>("api/Clientes")
+                    ?? new List<Cliente>();
+
+                foreach (var venta in ventas)
+                {
+                    var cliente = clientes
+                        .FirstOrDefault(c => c.IdCliente == venta.IdCliente);
+
+                    venta.Cliente = cliente != null
+                        ? $"{cliente.Nombres} {cliente.Apellidos}"
+                        : $"Cliente #{venta.IdCliente}";
+                }
+
+                return View("Index", ventas);
+            }
+            catch
+            {
+                ViewBag.Error =
+                    "No se pudieron consultar las ventas del cliente.";
+
+                return View("Index", new List<Venta>());
+            }
+        }
+        // =====================================================
+        // VER DETALLE DE UNA VENTA
+        // =====================================================
+
+        [HttpGet]
+        public async Task<IActionResult> Details(int id)
+        {
+            try
+            {
+                var ventas = await _httpClient
+                    .GetFromJsonAsync<List<Venta>>("api/Ventas")
+                    ?? new List<Venta>();
+
+                var venta = ventas
+                    .FirstOrDefault(v => v.IdVenta == id);
+
+                if (venta == null)
+                {
+                    return NotFound();
+                }
+
+                var clientes = await _httpClient
+                    .GetFromJsonAsync<List<Cliente>>("api/Clientes")
+                    ?? new List<Cliente>();
+
+                var cliente = clientes
+                    .FirstOrDefault(c => c.IdCliente == venta.IdCliente);
+
+                venta.Cliente = cliente != null
+                    ? $"{cliente.Nombres} {cliente.Apellidos}"
+                    : $"Cliente #{venta.IdCliente}";
+
+                var bicicletas = await _httpClient
+                    .GetFromJsonAsync<List<Bicicleta>>("api/Bicicletas")
+                    ?? new List<Bicicleta>();
+
+                foreach (var detalle in venta.Detalles)
+                {
+                    var bicicleta = bicicletas
+                        .FirstOrDefault(b =>
+                            b.IdBicicleta == detalle.IdBicicleta);
+
+                    detalle.Bicicleta = bicicleta != null
+                        ? $"{bicicleta.Marca} {bicicleta.Modelo}"
+                        : $"Bicicleta #{detalle.IdBicicleta}";
+                }
+
+                return View(venta);
+            }
+            catch
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
     }
 }

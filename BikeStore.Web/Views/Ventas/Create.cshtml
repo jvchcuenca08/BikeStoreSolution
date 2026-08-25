@@ -130,6 +130,7 @@
         </div>
 
         <button type="button"
+                id="btnRegistrarVenta"
                 class="btn btn-primary">
             Registrar Venta
         </button>
@@ -144,8 +145,9 @@
 @section Scripts {
     <script>
         let subtotalGeneral = 0;
+        let detallesVenta = [];
 
-        document.getElementById("btnAgregar").addEventListener("click", function () {
+        document.getElementById("btnAgregar").addEventListener("click", function() {
 
             const selectBicicleta = document.getElementById("bicicleta");
             const cantidadInput = document.getElementById("cantidad");
@@ -153,40 +155,58 @@
             const opcionSeleccionada =
                 selectBicicleta.options[selectBicicleta.selectedIndex];
 
-            const idBicicleta = selectBicicleta.value;
-            const nombreBicicleta = opcionSeleccionada.text;
-            const precio = parseFloat(
-                opcionSeleccionada.getAttribute("data-precio")
-            );
-
-            const cantidad = parseInt(cantidadInput.value);
+            const idBicicleta = parseInt(selectBicicleta.value);
 
             if (!idBicicleta) {
                 alert("Seleccione una bicicleta.");
                 return;
             }
 
+            const cantidad = parseInt(cantidadInput.value);
+
             if (isNaN(cantidad) || cantidad <= 0) {
                 alert("Ingrese una cantidad válida.");
                 return;
             }
 
+            const precio = parseFloat(
+                opcionSeleccionada.getAttribute("data-precio")
+            );
+
+            const nombreBicicleta = opcionSeleccionada.text;
+
             const subtotal = precio * cantidad;
+
+            // Guardamos el detalle que posteriormente enviaremos al API
+            detallesVenta.push({
+                idBicicleta: idBicicleta,
+                cantidad: cantidad,
+                precio: precio,
+                subtotal: subtotal
+            });
 
             const fila = document.createElement("tr");
 
             fila.innerHTML = `
-                <td>${nombreBicicleta}</td>
-                <td>${cantidad}</td>
-                <td>$${precio.toFixed(2)}</td>
-                <td>$${subtotal.toFixed(2)}</td>
-            `;
+                        <td>${nombreBicicleta}</td>
+                        <td>${cantidad}</td>
+                        <td>$${precio.toFixed(2)}</td>
+                        <td>$${subtotal.toFixed(2)}</td>
+                    `;
 
             document
                 .querySelector("#tablaDetalle tbody")
                 .appendChild(fila);
 
             subtotalGeneral += subtotal;
+
+            actualizarTotales();
+
+            cantidadInput.value = 1;
+        });
+
+
+        function actualizarTotales() {
 
             const iva = subtotalGeneral * 0.15;
             const total = subtotalGeneral + iva;
@@ -199,8 +219,77 @@
 
             document.getElementById("total").textContent =
                 total.toFixed(2);
+        }
 
-            cantidadInput.value = 1;
-        });
+
+        // =====================================================
+        // REGISTRAR VENTA REAL
+        // =====================================================
+
+        document.getElementById("btnRegistrarVenta")
+            .addEventListener("click", async function() {
+
+                const idCliente =
+                    parseInt(document.getElementById("cliente").value);
+
+                if (!idCliente) {
+                    alert("Seleccione un cliente.");
+                    return;
+                }
+
+                if (detallesVenta.length === 0) {
+                    alert("Debe agregar al menos una bicicleta.");
+                    return;
+                }
+
+                const venta = {
+                    idCliente: idCliente,
+
+                    detalles: detallesVenta.map(detalle => ({
+                        idBicicleta: detalle.idBicicleta,
+                        cantidad: detalle.cantidad
+                    }))
+                };
+
+                try {
+
+                    const respuesta = await fetch(
+                        "/Ventas/Create",
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+
+                            body: JSON.stringify(venta)
+                        }
+                    );
+
+                    const resultado = await respuesta.json();
+
+                    if (respuesta.ok) {
+
+                        alert("Venta registrada correctamente.");
+
+                        window.location.href = "/Ventas";
+                    }
+                    else {
+
+                        alert(
+                            resultado.mensaje ||
+                            "No se pudo registrar la venta."
+                        );
+                    }
+
+                }
+                catch (error) {
+
+                    alert(
+                        "Ocurrió un error al registrar la venta."
+                    );
+                }
+            });
+
     </script>
 }
