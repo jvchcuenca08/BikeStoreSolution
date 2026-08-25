@@ -1,0 +1,92 @@
+﻿@model BikeStore.Models.Cliente
+
+@{
+    ViewData["Title"] = "Nuevo Cliente";
+}
+
+<h1>Nuevo Cliente</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+
+        <form asp-action="Create" method="post">
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="Cedula" class="form-label">
+                    Cédula
+                </label>
+
+                <input asp-for="Cedula"
+                       class="form-control" />
+
+                <span asp-validation-for="Cedula"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Nombres" class="form-label">
+                    Nombres
+                </label>
+
+                <input asp-for="Nombres"
+                       class="form-control" />
+
+                <span asp-validation-for="Nombres"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Apellidos" class="form-label">
+                    Apellidos
+                </label>
+
+                <input asp-for="Apellidos"
+                       class="form-control" />
+
+                <span asp-validation-for="Apellidos"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Telefono" class="form-label">
+                    Teléfono
+                </label>
+
+                <input asp-for="Telefono"
+                       class="form-control" />
+
+                <span asp-validation-for="Telefono"
+                      class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Correo" class="form-label">
+                    Correo
+                </label>
+
+                <input asp-for="Correo"
+                       class="form-control" />
+
+                <span asp-validation-for="Correo"
+                      class="text-danger"></span>
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary">
+                Guardar
+            </button>
+
+            <a asp-action="Index"
+               class="btn btn-secondary">
+                Cancelar
+            </a>
+
+        </form>
+
+    </div>
+</div>
