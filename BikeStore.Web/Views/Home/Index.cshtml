@@ -1,8 +1,155 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Inicio";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+    <!-- LOGO DE BIKESTORE -->
+    <div class="mb-4">
+        <img src="~/images/bikestore-logo.png"
+             alt="BikeStore"
+             class="img-fluid rounded shadow"
+             style="max-width: 700px; width: 100%;" />
+    </div>
+
+    <!-- TÍTULO Y BIENVENIDA -->
+    <h1 class="display-4 fw-bold">
+        BikeStore
+    </h1>
+
+    <p class="lead">
+        Sistema de Gestión de Tienda de Bicicletas
+    </p>
+
+    <p class="text-muted mb-4">
+        Administra bicicletas, categorías, clientes, inventario y ventas
+        desde una sola aplicación.
+    </p>
+
+    <!-- BOTONES PRINCIPALES -->
+    <div class="mb-5">
+
+        <a asp-controller="Bicicletas"
+           asp-action="Index"
+           class="btn btn-primary btn-lg me-2">
+            Ver Bicicletas
+        </a>
+
+        <a asp-controller="Ventas"
+           asp-action="Create"
+           class="btn btn-success btn-lg">
+            Nueva Venta
+        </a>
+
+    </div>
+
+</div>
+
+
+<!-- ACCESOS A LOS MÓDULOS -->
+<div class="row text-center g-4">
+
+    <!-- BICICLETAS -->
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+
+                <h3>🚲</h3>
+
+                <h5 class="card-title">
+                    Bicicletas
+                </h5>
+
+                <p class="card-text">
+                    Consulta y administra las bicicletas disponibles.
+                </p>
+
+                <a asp-controller="Bicicletas"
+                   asp-action="Index"
+                   class="btn btn-outline-primary">
+                    Ir a Bicicletas
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CATEGORÍAS -->
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+
+                <h3>📂</h3>
+
+                <h5 class="card-title">
+                    Categorías
+                </h5>
+
+                <p class="card-text">
+                    Administra las categorías de las bicicletas.
+                </p>
+
+                <a asp-controller="Categorias"
+                   asp-action="Index"
+                   class="btn btn-outline-primary">
+                    Ir a Categorías
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- CLIENTES -->
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+
+                <h3>👥</h3>
+
+                <h5 class="card-title">
+                    Clientes
+                </h5>
+
+                <p class="card-text">
+                    Registra, consulta y administra los clientes.
+                </p>
+
+                <a asp-controller="Clientes"
+                   asp-action="Index"
+                   class="btn btn-outline-primary">
+                    Ir a Clientes
+                </a>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- VENTAS -->
+    <div class="col-md-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body">
+
+                <h3>🧾</h3>
+
+                <h5 class="card-title">
+                    Ventas
+                </h5>
+
+                <p class="card-text">
+                    Registra nuevas ventas y consulta el historial.
+                </p>
+
+                <a asp-controller="Ventas"
+                   asp-action="Index"
+                   class="btn btn-outline-primary">
+                    Ir a Ventas
+                </a>
+
+            </div>
+        </div>
+    </div>
+
 </div>
