@@ -100,7 +100,8 @@
             <form asp-action="DeleteConfirmed" method="post">
 
                 <input type="hidden"
-                       asp-for="IdBicicleta" />
+                       name="id"
+                       value="@Model.IdBicicleta" />
 
                 <a asp-controller="Bicicletas"
                    asp-action="Index"
